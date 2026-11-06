@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CRM Alunos</title>
+<style>
+:root{--bg:#f3f5f9;--sf:#fff;--tx:#1b2540;--mu:#6a7592;--ln:#e2e7f0;--side:#10192f;--br:#2563eb;--brd:#1d4ed8}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{font:14px/1.45 "Segoe UI",Inter,system-ui,-apple-system,Roboto,sans-serif;background:var(--bg);color:var(--tx);display:flex}
+button,input,select,textarea{font:inherit;color:inherit}
+aside{width:224px;background:var(--side);color:#c9d2e8;display:flex;flex-direction:column;padding:18px 12px;flex-shrink:0}
+.logo{display:flex;align-items:center;gap:10px;color:#fff;font-weight:700;font-size:16px;padding:0 8px 22px}
+.logo i{width:30px;height:30px;border-radius:8px;background:var(--br);display:grid;place-items:center;font-style:normal}
+nav button{display:flex;width:100%;gap:10px;align-items:center;background:none;border:0;color:inherit;padding:10px 12px;border-radius:8px;cursor:pointer;text-align:left;margin-bottom:2px}
+nav button:hover{background:#1a2644}
+nav button.on{background:var(--br);color:#fff}
+.conn{margin-top:auto;font-size:12px;padding:10px 12px;border-radius:8px;background:#1a2644;display:flex;gap:8px;align-items:center}
+.dot{width:8px;height:8px;border-radius:50%;background:#f59e0b}
+.dot.ok{background:#22c55e}.dot.err{background:#ef4444}
+main{flex:1;min-width:0;display:flex;flex-direction:column;height:100%}
+header{display:flex;gap:12px;align-items:center;padding:16px 24px;background:var(--sf);border-bottom:1px solid var(--ln)}
+header h1{font-size:18px;font-weight:700;margin-right:auto}
+.search{width:260px;max-width:40vw;padding:9px 12px;border:1px solid var(--ln);border-radius:8px;background:var(--bg)}
+.btn{padding:9px 14px;border-radius:8px;border:1px solid var(--ln);background:var(--sf);cursor:pointer;font-weight:600}
+.btn:hover{background:var(--bg)}
+.btn.pr{background:var(--br);border-color:var(--br);color:#fff}
+.btn.pr:hover{background:var(--brd)}
+.btn.dg{color:#dc2626}
+:focus-visible{outline:2px solid var(--br);outline-offset:2px}
+.kpis{display:flex;gap:12px;padding:16px 24px 0;flex-wrap:wrap}
+.kpi{background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:12px 16px;min-width:150px}
+.kpi b{display:block;font-size:22px}
+.kpi span{color:var(--mu);font-size:12px}
+.board{flex:1;display:flex;gap:14px;padding:16px 24px 24px;overflow:auto;align-items:flex-start}
+.col{width:290px;flex-shrink:0;background:#e9edf5;border-radius:12px;display:flex;flex-direction:column;max-height:100%}
+.col.over{outline:2px dashed var(--br)}
+.ch{padding:12px 14px;display:flex;align-items:center;gap:8px;font-weight:700;border-top:3px solid var(--c);border-radius:12px 12px 0 0}
+.ch em{margin-left:auto;font-style:normal;font-weight:600;color:var(--mu);background:var(--sf);border-radius:20px;padding:1px 9px;font-size:12px}
+.cards{padding:0 10px 10px;overflow:auto;display:flex;flex-direction:column;gap:8px;min-height:48px}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:12px;cursor:grab;box-shadow:0 1px 2px rgba(16,25,47,.06)}
+.card:hover{border-color:#b9c6e4}
+.card.drag{opacity:.4}
+.top{display:flex;gap:10px;align-items:center}
+.av{width:34px;height:34px;border-radius:50%;background:#dbe6ff;color:var(--brd);display:grid;place-items:center;font-weight:700;flex-shrink:0}
+.nm{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ph{color:var(--mu);font-size:12.5px}
+.tag{display:inline-block;margin-top:10px;background:#eef3ff;color:var(--brd);border-radius:6px;padding:2px 8px;font-size:12px;font-weight:600}
+.ob{color:var(--mu);font-size:12.5px;margin-top:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ft{display:flex;justify-content:space-between;align-items:center;margin-top:10px;color:var(--mu);font-size:12px}
+.wa{color:#15803d;font-weight:600;text-decoration:none}
+.empty{color:var(--mu);text-align:center;padding:14px 6px;font-size:13px}
+.list{flex:1;overflow:auto;padding:16px 24px 24px}
+table{width:100%;border-collapse:collapse;background:var(--sf);border:1px solid var(--ln);border-radius:10px;overflow:hidden;min-width:680px}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--ln)}
+th{background:#f8f9fc;color:var(--mu);font-weight:600;font-size:12.5px}
+tbody tr{cursor:pointer}tbody tr:hover{background:#f8faff}
+.pill{display:inline-block;border-radius:20px;padding:2px 10px;font-size:12px;font-weight:600;color:#fff;background:var(--c)}
+.wrapx{overflow-x:auto}
+dialog{border:0;border-radius:14px;padding:0;width:min(480px,94vw);box-shadow:0 20px 60px rgba(16,25,47,.3)}
+dialog::backdrop{background:rgba(16,25,47,.5)}
+form{padding:22px;display:grid;gap:14px}
+form h2{font-size:17px}
+label{display:grid;gap:5px;font-weight:600;font-size:12.5px;color:var(--mu)}
+input,select,textarea{padding:9px 11px;border:1px solid var(--ln);border-radius:8px;background:var(--sf);color:var(--tx);font-weight:400;font-size:14px}
+textarea{min-height:78px;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.acts{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
+.acts .dg{margin-right:auto}
+.hint{font-size:12.5px;color:var(--mu);font-weight:400}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--side);color:#fff;padding:10px 16px;border-radius:8px;display:none;z-index:9}
+@media(max-width:800px){aside{display:none}header{flex-wrap:wrap}.search{width:100%;max-width:none;order:5}}
+</style>
+</head>
+<body>
+<aside>
+  <div class="logo"><i>🎓</i>CRM Alunos</div>
+  <nav>
+    <button id="nv-funil" class="on">▦ Funil de vendas</button>
+    <button id="nv-lista">☰ Contatos</button>
+  </nav>
+  <div class="conn"><span class="dot" id="dot"></span><span id="cs">Modo demonstração</span></div>
+</aside>
+<main>
+  <header>
+    <h1 id="ttl">Funil de vendas</h1>
+    <input class="search" id="q" type="search" placeholder="Buscar por nome, telefone ou plano" aria-label="Buscar">
+    <button class="btn" id="cfg">Conectar planilha</button>
+    <button class="btn pr" id="new">+ Novo lead</button>
+  </header>
+  <div class="kpis" id="kpis"></div>
+  <section class="board" id="board"></section>
+  <section class="list" id="list" hidden><div class="wrapx"><table><thead><tr><th>Nome</th><th>Telefone</th><th>Plano</th><th>Etapa</th><th>Criado em</th></tr></thead><tbody id="tb"></tbody></table></div></section>
+</main>
+
+<dialog id="dl">
+  <form id="fm" method="dialog">
+    <h2 id="fh">Novo lead</h2>
+    <label>Nome do aluno<input id="f-nome" required></label>
+    <div class="row">
+      <label>Telefone<input id="f-tel" type="tel" placeholder="(47) 99999-9999" required></label>
+      <label>Etapa<select id="f-etapa"></select></label>
+    </div>
+    <label>Plano de interesse<select id="f-plano"></select></label>
+    <label>Informações do atendimento<textarea id="f-obs" placeholder="Horário preferido, nível, objeções, próximo contato…"></textarea></label>
+    <div class="acts">
+      <button type="button" class="btn dg" id="del" hidden>Excluir</button>
+      <button type="button" class="btn" id="cn">Cancelar</button>
+      <button class="btn pr">Salvar</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dc">
+  <form id="fc" method="dialog">
+    <h2>Conectar ao Google Sheets</h2>
+    <label>URL do Apps Script (termina em /exec)<input id="f-url" placeholder="https://script.google.com/macros/s/…/exec"></label>
+    <p class="hint">Deixe em branco para voltar ao modo demonstração (dados salvos só neste navegador).</p>
+    <div class="acts"><button type="button" class="btn" id="cn2">Cancelar</button><button class="btn pr">Salvar conexão</button></div>
+  </form>
+</dialog>
+<div id="toast" role="status"></div>
+
+<script>
+const STAGES=[
+  {id:'Novo contato',c:'#6366f1'},
+  {id:'Em atendimento',c:'#0ea5e9'},
+  {id:'Proposta enviada',c:'#f59e0b'},
+  {id:'Matriculado',c:'#16a34a'},
+  {id:'Perdido',c:'#94a3b8'}
+];
+const PLANS=['Inglês Regular','Intensivo','Conversação','Business English','Kids & Teens','Preparatório IELTS/TOEFL'];
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const get=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+const set=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+let leads=[],view='funil',editing=null;
+
+function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display='none',2600)}
+function status(t,k){$('#cs').textContent=t;$('#dot').className='dot '+(k||'')}
+const url=()=>get('crm_api')||'';
+
+async function remote(body){
+  const r=await fetch(url(),{method:'POST',body:JSON.stringify(body)});
+  if(!r.ok)throw new Error(r.status);
+  return r.json();
+}
+async function load(){
+  if(!url()){
+    try{leads=JSON.parse(get('crm_demo')||'null')}catch(e){leads=null}
+    if(!leads){const d=new Date().toISOString();leads=[
+      {id:'a1',nome:'Mariana Souza',telefone:'(47) 99123-4567',plano:'Intensivo',etapa:'Novo contato',obs:'Quer começar em novembro, aulas à noite.',criado:d},
+      {id:'a2',nome:'Carlos Eduardo Lima',telefone:'(47) 98877-1020',plano:'Business English',etapa:'Em atendimento',obs:'Precisa de inglês para reuniões. Agendar aula experimental.',criado:d},
+      {id:'a3',nome:'Ana Beatriz Rocha',telefone:'(47) 99654-3210',plano:'Kids & Teens',etapa:'Proposta enviada',obs:'Filha de 11 anos, nível iniciante.',criado:d}]}
+    status('Modo demonstração');render();return;
+  }
+  status('Sincronizando…');
+  try{
+    const r=await fetch(url());
+    leads=(await r.json()).leads||[];
+    status('Conectado ao Google Sheets','ok');
+  }catch(e){status('Falha na conexão','err');toast('Não foi possível ler a planilha. Verifique a URL e a implantação.')}
+  render();
+}
+async function persist(op,lead){
+  if(!url()){set('crm_demo',JSON.stringify(leads));return}
+  try{await remote({action:op,lead});status('Conectado ao Google Sheets','ok')}
+  catch(e){status('Falha ao salvar','err');toast('Erro ao salvar na planilha.')}
+}
+
+function match(l){const q=$('#q').value.trim().toLowerCase();return !q||[l.nome,l.telefone,l.plano,l.obs].join(' ').toLowerCase().includes(q)}
+function ini(n){return n.split(/\s+/).filter(Boolean).slice(0,2).map(p=>p[0]).join('').toUpperCase()}
+function wa(t){let d=String(t).replace(/\D/g,'');if(d.length<10)return '';if(d.length<=11)d='55'+d;return 'https://wa.me/'+d}
+function fmt(d){const x=new Date(d);return isNaN(x)?'':x.toLocaleDateString('pt-BR')}
+
+function render(){
+  const vis=leads.filter(match);
+  const mat=leads.filter(l=>l.etapa==='Matriculado').length;
+  const ativos=leads.filter(l=>l.etapa!=='Matriculado'&&l.etapa!=='Perdido').length;
+  $('#kpis').innerHTML=[[leads.length,'Total de leads'],[ativos,'Em andamento'],[mat,'Matriculados'],[leads.length?Math.round(mat/leads.length*100)+'%':'0%','Taxa de conversão']]
+    .map(k=>`<div class="kpi"><b>${k[0]}</b><span>${k[1]}</span></div>`).join('');
+  $('#board').hidden=view!=='funil';$('#list').hidden=view!=='lista';
+  if(view==='funil'){
+    $('#board').innerHTML=STAGES.map(s=>{
+      const cs=vis.filter(l=>l.etapa===s.id);
+      return `<div class="col" data-s="${esc(s.id)}" style="--c:${s.c}"><div class="ch">${esc(s.id)}<em>${cs.length}</em></div><div class="cards">${
+        cs.map(card).join('')||'<div class="empty">Arraste um lead para cá</div>'}</div></div>`}).join('');
+  }else{
+    $('#tb').innerHTML=vis.map(l=>{const s=STAGES.find(x=>x.id===l.etapa)||STAGES[0];
+      return `<tr data-id="${esc(l.id)}"><td><b>${esc(l.nome)}</b></td><td>${esc(l.telefone)}</td><td>${esc(l.plano)}</td><td><span class="pill" style="--c:${s.c}">${esc(s.id)}</span></td><td>${fmt(l.criado)}</td></tr>`}).join('')
+      ||'<tr><td colspan="5" class="empty">Nenhum lead encontrado.</td></tr>';
+  }
+}
+function card(l){
+  const w=wa(l.telefone);
+  return `<div class="card" draggable="true" data-id="${esc(l.id)}">
+  <div class="top"><div class="av">${esc(ini(l.nome))}</div><div style="min-width:0"><div class="nm">${esc(l.nome)}</div><div class="ph">${esc(l.telefone)}</div></div></div>
+  <span class="tag">${esc(l.plano||'Sem plano')}</span>
+  ${l.obs?`<div class="ob">${esc(l.obs)}</div>`:''}
+  <div class="ft"><span>${fmt(l.criado)}</span>${w?`<a class="wa" href="${w}" target="_blank" rel="noopener">WhatsApp</a>`:''}</div></div>`;
+}
+
+/* arrastar e soltar */
+let dragId=null;
+$('#board').addEventListener('dragstart',e=>{const c=e.target.closest('.card');if(!c)return;dragId=c.dataset.id;c.classList.add('drag');e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',dragId)});
+$('#board').addEventListener('dragend',()=>{dragId=null;render()});
+$('#board').addEventListener('dragover',e=>{const c=e.target.closest('.col');if(!c)return;e.preventDefault();document.querySelectorAll('.col.over').forEach(x=>x.classList.remove('over'));c.classList.add('over')});
+$('#board').addEventListener('drop',e=>{
+  const c=e.target.closest('.col');if(!c||!dragId)return;e.preventDefault();
+  const l=leads.find(x=>x.id===dragId);
+  if(l&&l.etapa!==c.dataset.s){l.etapa=c.dataset.s;persist('upsert',l);toast('Movido para '+l.etapa)}
+});
+$('#board').addEventListener('click',e=>{if(e.target.closest('a'))return;const c=e.target.closest('.card');if(c)openForm(c.dataset.id)});
+$('#tb').addEventListener('click',e=>{const r=e.target.closest('tr[data-id]');if(r)openForm(r.dataset.id)});
+
+/* formulário */
+$('#f-etapa').innerHTML=STAGES.map(s=>`<option>${esc(s.id)}</option>`).join('');
+$('#f-plano').innerHTML=PLANS.map(p=>`<option>${esc(p)}</option>`).join('');
+function openForm(id){
+  editing=leads.find(l=>l.id===id)||null;
+  $('#fh').textContent=editing?'Editar lead':'Novo lead';
+  $('#del').hidden=!editing;
+  const l=editing||{nome:'',telefone:'',plano:PLANS[0],etapa:STAGES[0].id,obs:''};
+  $('#f-nome').value=l.nome;$('#f-tel').value=l.telefone;$('#f-plano').value=l.plano;$('#f-etapa').value=l.etapa;$('#f-obs').value=l.obs||'';
+  $('#dl').showModal();
+}
+$('#fm').addEventListener('submit',async()=>{
+  const d={nome:$('#f-nome').value.trim(),telefone:$('#f-tel').value.trim(),plano:$('#f-plano').value,etapa:$('#f-etapa').value,obs:$('#f-obs').value.trim()};
+  if(editing){Object.assign(editing,d);await persist('upsert',editing)}
+  else{const l={id:Date.now().toString(36),criado:new Date().toISOString(),...d};leads.unshift(l);await persist('upsert',l)}
+  render();toast('Lead salvo');
+});
+$('#del').onclick=async()=>{
+  if(!editing||!confirm('Excluir este lead?'))return;
+  const l=editing;leads=leads.filter(x=>x.id!==l.id);$('#dl').close();render();await persist('delete',l);toast('Lead excluído');
+};
+$('#cn').onclick=()=>$('#dl').close();
+$('#new').onclick=()=>openForm(null);
+
+/* conexão */
+$('#cfg').onclick=()=>{$('#f-url').value=url();$('#dc').showModal()};
+$('#cn2').onclick=()=>$('#dc').close();
+$('#fc').addEventListener('submit',()=>{
+  const v=$('#f-url').value.trim();
+  if(v)set('crm_api',v);else try{localStorage.removeItem('crm_api')}catch(e){}
+  load();
+});
+
+/* navegação e busca */
+function nav(v){view=v;$('#nv-funil').className=v==='funil'?'on':'';$('#nv-lista').className=v==='lista'?'on':'';$('#ttl').textContent=v==='funil'?'Funil de vendas':'Contatos';render()}
+$('#nv-funil').onclick=()=>nav('funil');$('#nv-lista').onclick=()=>nav('lista');
+$('#q').addEventListener('input',render);
+
+load();
+</script>
+</body>
+</html>
