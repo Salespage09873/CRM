@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>CRM Alunos</title>
 <style>
-:root{--bg:#f3f5f9;--sf:#fff;--tx:#1b2540;--mu:#6a7592;--ln:#e2e7f0;--side:#10192f;--br:#2563eb;--brd:#1d4ed8}
+:root{--bg:#f3f5f9;--sf:#fff;--tx:#1b2540;--mu:#6a7592;--ln:#e2e7f0;--side:#10192f;--br:#2563eb;--brd:#1d4ed8;--ok:#16a34a;--warn:#f59e0b;--err:#ef4444}
 *{box-sizing:border-box;margin:0}
 html,body{height:100%}
 body{font:14px/1.45 "Segoe UI",Inter,system-ui,-apple-system,Roboto,sans-serif;background:var(--bg);color:var(--tx);display:flex}
@@ -17,20 +17,21 @@ nav button{display:flex;width:100%;gap:10px;align-items:center;background:none;b
 nav button:hover{background:#1a2644}
 nav button.on{background:var(--br);color:#fff}
 .conn{margin-top:auto;font-size:12px;padding:10px 12px;border-radius:8px;background:#1a2644;display:flex;gap:8px;align-items:center}
-.dot{width:8px;height:8px;border-radius:50%;background:#f59e0b}
-.dot.ok{background:#22c55e}.dot.err{background:#ef4444}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--warn)}
+.dot.ok{background:var(--ok)}.dot.err{background:var(--err)}
 main{flex:1;min-width:0;display:flex;flex-direction:column;height:100%}
-header{display:flex;gap:12px;align-items:center;padding:16px 24px;background:var(--sf);border-bottom:1px solid var(--ln)}
+header{display:flex;gap:12px;align-items:center;padding:16px 24px;background:var(--sf);border-bottom:1px solid var(--ln);flex-wrap:wrap}
 header h1{font-size:18px;font-weight:700;margin-right:auto}
-.search{width:260px;max-width:40vw;padding:9px 12px;border:1px solid var(--ln);border-radius:8px;background:var(--bg)}
-.btn{padding:9px 14px;border-radius:8px;border:1px solid var(--ln);background:var(--sf);cursor:pointer;font-weight:600}
+.search{width:260px;max-width:100%;padding:9px 12px;border:1px solid var(--ln);border-radius:8px;background:var(--bg)}
+.btn{padding:9px 14px;border-radius:8px;border:1px solid var(--ln);background:var(--sf);cursor:pointer;font-weight:600;white-space:nowrap}
 .btn:hover{background:var(--bg)}
 .btn.pr{background:var(--br);border-color:var(--br);color:#fff}
 .btn.pr:hover{background:var(--brd)}
 .btn.dg{color:#dc2626}
+.btn.sm{padding:5px 9px;font-size:12px;font-weight:500}
 :focus-visible{outline:2px solid var(--br);outline-offset:2px}
 .kpis{display:flex;gap:12px;padding:16px 24px 0;flex-wrap:wrap}
-.kpi{background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:12px 16px;min-width:150px}
+.kpi{background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:12px 16px;min-width:150px;flex:1}
 .kpi b{display:block;font-size:22px}
 .kpi span{color:var(--mu);font-size:12px}
 .board{flex:1;display:flex;gap:14px;padding:16px 24px 24px;overflow:auto;align-items:flex-start}
@@ -70,14 +71,70 @@ textarea{min-height:78px;resize:vertical}
 .acts .dg{margin-right:auto}
 .hint{font-size:12.5px;color:var(--mu);font-weight:400}
 #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--side);color:#fff;padding:10px 16px;border-radius:8px;display:none;z-index:9}
-@media(max-width:800px){aside{display:none}header{flex-wrap:wrap}.search{width:100%;max-width:none;order:5}}
+
+/* ===== PLANILHA ===== */
+.sheet-wrap{flex:1;display:flex;flex-direction:column;min-height:0;padding:16px 24px 0}
+.sheet-toolbar{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.sheet-toolbar .hint{margin-left:auto}
+.sheet-scroll{flex:1;overflow:auto;border:1px solid var(--ln);border-radius:10px;background:var(--sf);min-height:200px}
+table.sheet{border-collapse:separate;border-spacing:0;width:100%;min-width:900px;font-size:13px}
+table.sheet th,table.sheet td{border-right:1px solid var(--ln);border-bottom:1px solid var(--ln);padding:0;position:relative}
+table.sheet th{background:#f8f9fc;color:var(--mu);font-weight:600;font-size:12px;padding:7px 10px;text-align:left;position:sticky;top:0;z-index:2;white-space:nowrap}
+table.sheet th.rowhead{width:40px;text-align:center}
+table.sheet td{background:#fff}
+table.sheet td.rowhead{background:#f8f9fc;color:var(--mu);text-align:center;font-size:12px;font-weight:600;padding:6px;cursor:default;user-select:none}
+table.sheet td input,table.sheet td select{width:100%;border:0;border-radius:0;padding:8px 10px;background:transparent;font-size:13px;font-weight:400}
+table.sheet td input:focus,table.sheet td select:focus{background:#eef5ff;outline:2px solid var(--br);outline-offset:-2px}
+table.sheet tr:hover td{background:#fafbff}
+table.sheet tr:hover td.rowhead{background:#eef2fa}
+table.sheet td.paste-target{background:#fff8e1!important;outline:2px dashed var(--warn);outline-offset:-2px}
+.cell-del{position:absolute;right:2px;top:50%;transform:translateY(-50%);width:16px;height:16px;border-radius:4px;border:0;background:#fee2e2;color:#dc2626;font-size:11px;line-height:1;cursor:pointer;display:none;font-weight:700}
+td:hover .cell-del{display:block}
+.row-actions{display:flex;gap:4px}
+.row-actions button{border:0;background:none;cursor:pointer;color:var(--mu);padding:2px 6px;border-radius:4px;font-size:14px}
+.row-actions button:hover{background:#eef2fa;color:var(--tx)}
+
+/* ===== ESTATÍSTICAS ===== */
+.stats-wrap{flex:1;overflow:auto;padding:16px 24px 24px}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.panel{background:var(--sf);border:1px solid var(--ln);border-radius:12px;padding:18px}
+.panel h3{font-size:14px;margin-bottom:14px;color:var(--tx)}
+.panel .sub{font-size:12px;color:var(--mu);margin-bottom:12px}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.bar-row .lbl{width:130px;font-size:12.5px;color:var(--tx);flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-row .track{flex:1;height:22px;background:#eef2fa;border-radius:6px;overflow:hidden;position:relative}
+.bar-row .fill{height:100%;border-radius:6px;transition:width .4s;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;color:#fff;font-size:11px;font-weight:700}
+.bar-row .val{width:60px;text-align:right;font-size:12.5px;font-weight:600;flex-shrink:0}
+.donut-wrap{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.donut{width:150px;height:150px;border-radius:50%;flex-shrink:0;position:relative}
+.donut::after{content:'';position:absolute;inset:28px;background:var(--sf);border-radius:50%}
+.donut-center{position:absolute;inset:0;display:grid;place-items:center;z-index:1;text-align:center}
+.donut-center b{font-size:24px;display:block}
+.donut-center span{font-size:11px;color:var(--mu)}
+.legend{display:flex;flex-direction:column;gap:6px;font-size:12.5px}
+.legend span{display:flex;align-items:center;gap:8px}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.big-stat{text-align:center;padding:12px}
+.big-stat b{font-size:32px;display:block;line-height:1.1}
+.big-stat span{color:var(--mu);font-size:12px}
+.mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.rank-list{display:flex;flex-direction:column;gap:8px}
+.rank-item{display:flex;align-items:center;gap:10px;font-size:13px}
+.rank-item .pos{width:22px;height:22px;border-radius:6px;background:#eef2fa;color:var(--mu);display:grid;place-items:center;font-size:11px;font-weight:700;flex-shrink:0}
+.rank-item .pos.gold{background:#fef3c7;color:#b45309}
+.rank-item .nm2{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rank-item .qtd{color:var(--mu);font-size:12px;font-weight:600}
+
+@media(max-width:800px){aside{display:none}header{flex-wrap:wrap}.search{width:100%;max-width:none;order:5}.kpis{padding:12px 16px 0}.board{padding:12px 16px 16px}.sheet-wrap,.stats-wrap,.list{padding:12px 16px}}
 </style>
 </head>
 <body>
 <aside>
   <div class="logo"><i>🎓</i>CRM Alunos</div>
   <nav>
-    <button id="nv-funil" class="on">▦ Funil de vendas</button>
+    <button id="nv-funil">▦ Funil de vendas</button>
+    <button id="nv-planilha">▤ Planilha</button>
+    <button id="nv-stats">📊 Estatísticas</button>
     <button id="nv-lista">☰ Contatos</button>
   </nav>
   <div class="conn"><span class="dot" id="dot"></span><span id="cs">Modo demonstração</span></div>
@@ -91,9 +148,50 @@ textarea{min-height:78px;resize:vertical}
   </header>
   <div class="kpis" id="kpis"></div>
   <section class="board" id="board"></section>
-  <section class="list" id="list" hidden><div class="wrapx"><table><thead><tr><th>Nome</th><th>Telefone</th><th>Plano</th><th>Etapa</th><th>Criado em</th></tr></thead><tbody id="tb"></tbody></table></div></section>
+
+  <!-- PLANILHA -->
+  <section class="sheet-wrap" id="sheet-view" hidden>
+    <div class="sheet-toolbar">
+      <button class="btn sm" id="sheet-add-row">+ Adicionar linha</button>
+      <button class="btn sm" id="sheet-paste-hint" title="Clique numa célula e cole com Ctrl+V">📋 Colar do Sheets</button>
+      <button class="btn sm" id="sheet-clear" style="color:#dc2626">Limpar tudo</button>
+      <span class="hint">Dica: copie linhas de uma planilha e cole (Ctrl+V) em qualquer célula — as linhas são adicionadas automaticamente.</span>
+    </div>
+    <div class="sheet-scroll">
+      <table class="sheet" id="sheet-table">
+        <thead>
+          <tr>
+            <th class="rowhead">#</th>
+            <th>Nome</th>
+            <th>Telefone</th>
+            <th>Plano</th>
+            <th>Etapa</th>
+            <th>Observações</th>
+            <th>Criado em</th>
+            <th style="width:60px">Ações</th>
+          </tr>
+        </thead>
+        <tbody id="sheet-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ESTATÍSTICAS -->
+  <section class="stats-wrap" id="stats-view" hidden>
+    <div class="stats-grid" id="stats-grid"></div>
+  </section>
+
+  <section class="list" id="list" hidden>
+    <div class="wrapx">
+      <table>
+        <thead><tr><th>Nome</th><th>Telefone</th><th>Plano</th><th>Etapa</th><th>Criado em</th></tr></thead>
+        <tbody id="tb"></tbody>
+      </table>
+    </div>
+  </section>
 </main>
 
+<!-- MODAL LEAD -->
 <dialog id="dl">
   <form id="fm" method="dialog">
     <h2 id="fh">Novo lead</h2>
@@ -112,6 +210,7 @@ textarea{min-height:78px;resize:vertical}
   </form>
 </dialog>
 
+<!-- MODAL CONEXÃO -->
 <dialog id="dc">
   <form id="fc" method="dialog">
     <h2>Conectar ao Google Sheets</h2>
@@ -120,9 +219,11 @@ textarea{min-height:78px;resize:vertical}
     <div class="acts"><button type="button" class="btn" id="cn2">Cancelar</button><button class="btn pr">Salvar conexão</button></div>
   </form>
 </dialog>
+
 <div id="toast" role="status"></div>
 
 <script>
+/* ================= CONFIG ================= */
 const STAGES=[
   {id:'Novo contato',c:'#6366f1'},
   {id:'Em atendimento',c:'#0ea5e9'},
@@ -141,6 +242,7 @@ function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';cl
 function status(t,k){$('#cs').textContent=t;$('#dot').className='dot '+(k||'')}
 const url=()=>get('crm_api')||'';
 
+/* ================= REMOTE ================= */
 async function remote(body){
   const r=await fetch(url(),{method:'POST',body:JSON.stringify(body)});
   if(!r.ok)throw new Error(r.status);
@@ -168,29 +270,41 @@ async function persist(op,lead){
   try{await remote({action:op,lead});status('Conectado ao Google Sheets','ok')}
   catch(e){status('Falha ao salvar','err');toast('Erro ao salvar na planilha.')}
 }
+function persistAll(){set('crm_demo',JSON.stringify(leads))}
 
+/* ================= HELPERS ================= */
 function match(l){const q=$('#q').value.trim().toLowerCase();return !q||[l.nome,l.telefone,l.plano,l.obs].join(' ').toLowerCase().includes(q)}
-function ini(n){return n.split(/\s+/).filter(Boolean).slice(0,2).map(p=>p[0]).join('').toUpperCase()}
+function ini(n){return String(n||'?').split(/\s+/).filter(Boolean).slice(0,2).map(p=>p[0]).join('').toUpperCase()}
 function wa(t){let d=String(t).replace(/\D/g,'');if(d.length<10)return '';if(d.length<=11)d='55'+d;return 'https://wa.me/'+d}
 function fmt(d){const x=new Date(d);return isNaN(x)?'':x.toLocaleDateString('pt-BR')}
 
+/* ================= RENDER GERAL ================= */
 function render(){
-  const vis=leads.filter(match);
-  const mat=leads.filter(l=>l.etapa==='Matriculado').length;
-  const ativos=leads.filter(l=>l.etapa!=='Matriculado'&&l.etapa!=='Perdido').length;
-  $('#kpis').innerHTML=[[leads.length,'Total de leads'],[ativos,'Em andamento'],[mat,'Matriculados'],[leads.length?Math.round(mat/leads.length*100)+'%':'0%','Taxa de conversão']]
+  renderKpis();
+  $('#board').hidden=view!=='funil';
+  $('#list').hidden=view!=='lista';
+  $('#sheet-view').hidden=view!=='planilha';
+  $('#stats-view').hidden=view!=='stats';
+  if(view==='funil')renderBoard();
+  if(view==='lista')renderList();
+  if(view==='planilha')renderSheet();
+  if(view==='stats')renderStats();
+}
+function renderKpis(){
+  const vis=leads;
+  const mat=vis.filter(l=>l.etapa==='Matriculado').length;
+  const ativos=vis.filter(l=>l.etapa!=='Matriculado'&&l.etapa!=='Perdido').length;
+  $('#kpis').innerHTML=[[vis.length,'Total de leads'],[ativos,'Em andamento'],[mat,'Matriculados'],[vis.length?Math.round(mat/vis.length*100)+'%':'0%','Taxa de conversão']]
     .map(k=>`<div class="kpi"><b>${k[0]}</b><span>${k[1]}</span></div>`).join('');
-  $('#board').hidden=view!=='funil';$('#list').hidden=view!=='lista';
-  if(view==='funil'){
-    $('#board').innerHTML=STAGES.map(s=>{
-      const cs=vis.filter(l=>l.etapa===s.id);
-      return `<div class="col" data-s="${esc(s.id)}" style="--c:${s.c}"><div class="ch">${esc(s.id)}<em>${cs.length}</em></div><div class="cards">${
-        cs.map(card).join('')||'<div class="empty">Arraste um lead para cá</div>'}</div></div>`}).join('');
-  }else{
-    $('#tb').innerHTML=vis.map(l=>{const s=STAGES.find(x=>x.id===l.etapa)||STAGES[0];
-      return `<tr data-id="${esc(l.id)}"><td><b>${esc(l.nome)}</b></td><td>${esc(l.telefone)}</td><td>${esc(l.plano)}</td><td><span class="pill" style="--c:${s.c}">${esc(s.id)}</span></td><td>${fmt(l.criado)}</td></tr>`}).join('')
-      ||'<tr><td colspan="5" class="empty">Nenhum lead encontrado.</td></tr>';
-  }
+}
+
+/* ================= FUNIL ================= */
+function renderBoard(){
+  const vis=leads.filter(match);
+  $('#board').innerHTML=STAGES.map(s=>{
+    const cs=vis.filter(l=>l.etapa===s.id);
+    return `<div class="col" data-s="${esc(s.id)}" style="--c:${s.c}"><div class="ch">${esc(s.id)}<em>${cs.length}</em></div><div class="cards">${
+      cs.map(card).join('')||'<div class="empty">Arraste um lead para cá</div>'}</div></div>`}).join('');
 }
 function card(l){
   const w=wa(l.telefone);
@@ -201,7 +315,7 @@ function card(l){
   <div class="ft"><span>${fmt(l.criado)}</span>${w?`<a class="wa" href="${w}" target="_blank" rel="noopener">WhatsApp</a>`:''}</div></div>`;
 }
 
-/* arrastar e soltar */
+/* drag & drop */
 let dragId=null;
 $('#board').addEventListener('dragstart',e=>{const c=e.target.closest('.card');if(!c)return;dragId=c.dataset.id;c.classList.add('drag');e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',dragId)});
 $('#board').addEventListener('dragend',()=>{dragId=null;render()});
@@ -212,9 +326,255 @@ $('#board').addEventListener('drop',e=>{
   if(l&&l.etapa!==c.dataset.s){l.etapa=c.dataset.s;persist('upsert',l);toast('Movido para '+l.etapa)}
 });
 $('#board').addEventListener('click',e=>{if(e.target.closest('a'))return;const c=e.target.closest('.card');if(c)openForm(c.dataset.id)});
+
+/* ================= LISTA ================= */
+function renderList(){
+  const vis=leads.filter(match);
+  $('#tb').innerHTML=vis.map(l=>{const s=STAGES.find(x=>x.id===l.etapa)||STAGES[0];
+    return `<tr data-id="${esc(l.id)}"><td><b>${esc(l.nome)}</b></td><td>${esc(l.telefone)}</td><td>${esc(l.plano)}</td><td><span class="pill" style="--c:${s.c}">${esc(s.id)}</span></td><td>${fmt(l.criado)}</td></tr>`}).join('')
+    ||'<tr><td colspan="5" class="empty">Nenhum lead encontrado.</td></tr>';
+}
 $('#tb').addEventListener('click',e=>{const r=e.target.closest('tr[data-id]');if(r)openForm(r.dataset.id)});
 
-/* formulário */
+/* ================= PLANILHA ================= */
+let pasteCell=null;
+
+function renderSheet(){
+  const tbody=$('#sheet-body');
+  tbody.innerHTML='';
+  leads.forEach((l,i)=>tbody.appendChild(sheetRow(l,i)));
+  // linha vazia para adicionar
+  const tr=document.createElement('tr');
+  tr.className='add-row';
+  tr.innerHTML=`<td class="rowhead">+</td><td colspan="7"><button class="btn sm" id="sheet-add-inline">+ Adicionar nova linha</button></td>`;
+  tbody.appendChild(tr);
+  $('#sheet-add-inline').onclick=()=>{addRow()};
+  // destaca célula de paste
+  if(pasteCell){/* nada */}
+}
+function sheetRow(l,i){
+  const tr=document.createElement('tr');
+  tr.dataset.id=l.id;
+  const stageOpts=STAGES.map(s=>`<option ${s.id===l.etapa?'selected':''}>${esc(s.id)}</option>`).join('');
+  const planOpts=PLANS.map(p=>`<option ${p===l.plano?'selected':''}>${esc(p)}</option>`).join('')+(PLANS.includes(l.plano)?'':`<option selected>${esc(l.plano||'')}</option>`);
+  tr.innerHTML=`
+    <td class="rowhead">${i+1}</td>
+    <td><input data-field="nome" value="${esc(l.nome)}" placeholder="Nome"></td>
+    <td><input data-field="telefone" value="${esc(l.telefone)}" placeholder="(00) 00000-0000"></td>
+    <td><select data-field="plano">${planOpts}</select></td>
+    <td><select data-field="etapa">${stageOpts}</select></td>
+    <td><input data-field="obs" value="${esc(l.obs||'')}" placeholder="Observações"></td>
+    <td><input data-field="criado" value="${esc(fmt(l.criado))}" placeholder="dd/mm/aaaa"></td>
+    <td><div class="row-actions"><button title="Editar no modal" data-act="edit">✏️</button><button title="Excluir" data-act="del">🗑️</button></div></td>`;
+  // listeners
+  tr.querySelectorAll('input,select').forEach(el=>{
+    el.addEventListener('change',()=>{
+      const f=el.dataset.field;
+      let v=el.value;
+      if(f==='criado'){
+        // tenta converter dd/mm/aaaa
+        const m=v.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+        if(m){v=new Date(m[3],m[2]-1,m[1]).toISOString()}else{v=new Date().toISOString()}
+      }
+      l[f]=v;
+      persistAll();
+      if(url())persist('upsert',l);
+      // atualiza contagem/dashboard sem re-renderizar a planilha inteira (evita perder foco)
+      renderKpis();
+      toast('Linha salva');
+    });
+  });
+  tr.querySelector('[data-act="edit"]').onclick=()=>openForm(l.id);
+  tr.querySelector('[data-act="del"]').onclick=async()=>{
+    if(!confirm('Excluir esta linha?'))return;
+    leads=leads.filter(x=>x.id!==l.id);persistAll();render();await persist('delete',l);toast('Linha excluída');
+  };
+  // paste handler na linha (delegação por célula)
+  tr.querySelectorAll('td input,td select').forEach(cell=>{
+    cell.addEventListener('focus',()=>{pasteCell=cell});
+  });
+  return tr;
+}
+function addRow(){
+  const l={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),nome:'',telefone:'',plano:PLANS[0],etapa:STAGES[0].id,obs:'',criado:new Date().toISOString()};
+  leads.push(l);persistAll();if(url())persist('upsert',l);
+  renderSheet();
+  // foca no nome da nova linha
+  const row=$('#sheet-body').querySelector(`tr[data-id="${l.id}"] input[data-field="nome"]`);
+  if(row)row.focus();
+}
+$('#sheet-add-row').onclick=addRow;
+$('#sheet-clear').onclick=()=>{
+  if(!confirm('Apagar TODOS os leads? Isso não pode ser desfeito.'))return;
+  leads=[];persistAll();render();toast('Planilha limpa');
+};
+$('#sheet-paste-hint').onclick=()=>{
+  toast('Clique numa célula da planilha e cole com Ctrl+V');
+};
+
+/* ===== COLAR DO SHEETS ===== */
+document.addEventListener('paste',e=>{
+  if(view!=='planilha')return;
+  const active=document.activeElement;
+  if(!active||!(active.tagName==='INPUT'||active.tagName==='SELECT'))return;
+  const text=(e.clipboardData||window.clipboardData).getData('text');
+  if(!text||!text.includes('\t'))return; // só intercepta se for tabela (tem tab)
+  e.preventDefault();
+  const rows=text.replace(/\r/g,'').split('\n').filter(r=>r.trim()!=='').map(r=>r.split('\t'));
+  // identifica a linha/célula de origem
+  const tr=active.closest('tr');
+  const startId=tr?.dataset.id;
+  const startIdx=leads.findIndex(x=>x.id===startId);
+  const fieldOrder=['nome','telefone','plano','etapa','obs','criado'];
+  const startField=active.dataset.field;
+  const startCol=Math.max(0,fieldOrder.indexOf(startField));
+
+  let added=0,updated=0;
+  rows.forEach((cols,r)=>{
+    // define o lead alvo
+    let lead;
+    if(r===0 && startIdx>=0 && startCol>0){
+      // primeira linha: mescla na linha existente a partir da coluna clicada
+      lead=leads[startIdx];
+    }else{
+      // demais linhas: cria novos
+      lead={id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),criado:new Date().toISOString()};
+      leads.push(lead);added++;
+    }
+    cols.forEach((val,c)=>{
+      const f=fieldOrder[startCol+c];
+      if(!f)return;
+      let v=val.trim();
+      if(f==='criado'){
+        const m=v.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+        if(m)v=new Date(m[3],m[2]-1,m[1]).toISOString();
+        else if(!v)return;
+        else v=new Date().toISOString();
+      }
+      if(f==='etapa' && !STAGES.some(s=>s.id===v)){
+        // tenta mapear por aproximação, senão usa Novo contato
+        const found=STAGES.find(s=>s.id.toLowerCase().includes(v.toLowerCase()));
+        v=found?found.id:STAGES[0].id;
+      }
+      if(f==='plano' && !PLANS.includes(v) && v){/* aceita valor livre */}
+      lead[f]=v;
+    });
+    if(r===0 && startIdx>=0 && startCol>0)updated++;
+    else if(url())persist('upsert',lead);
+  });
+  persistAll();
+  render();
+  toast(`Colado: ${added} nova(s) linha(s)${updated?', 1 atualizada':''}`);
+});
+
+/* ================= ESTATÍSTICAS ================= */
+function renderStats(){
+  const total=leads.length||1;
+  const byStage=STAGES.map(s=>({...s,n:leads.filter(l=>l.etapa===s.id).length}));
+  const byPlan={};
+  leads.forEach(l=>{byPlan[l.plano||'Sem plano']=(byPlan[l.plano||'Sem plano']||0)+1});
+  const plans=Object.entries(byPlan).sort((a,b)=>b[1]-a[1]);
+  const mat=leads.filter(l=>l.etapa==='Matriculado').length;
+  const perd=leads.filter(l=>l.etapa==='Perdido').length;
+  const ativos=leads.filter(l=>l.etapa!=='Matriculado'&&l.etapa!=='Perdido').length;
+  const conv=leads.length?Math.round(mat/leads.length*100):0;
+
+  // donut
+  const donutSegs=byStage.filter(s=>s.n>0);
+  let acc=0;
+  const stops=donutSegs.map(s=>{
+    const start=acc, end=acc+s.n/total*100; acc=end;
+    return `${s.c} ${start}% ${end}%`;
+  }).join(', ');
+
+  // barras por etapa
+  const maxStage=Math.max(...byStage.map(s=>s.n),1);
+  const barsStage=byStage.map(s=>`
+    <div class="bar-row">
+      <span class="lbl">${esc(s.id)}</span>
+      <div class="track"><div class="fill" style="width:${s.n/maxStage*100}%;background:${s.c}">${s.n>0?s.n:''}</div></div>
+      <span class="val">${s.n}</span>
+    </div>`).join('');
+
+  const maxPlan=plans.length?plans[0][1]:1;
+  const barsPlan=plans.map(([p,n])=>`
+    <div class="bar-row">
+      <span class="lbl">${esc(p)}</span>
+      <div class="track"><div class="fill" style="width:${n/maxPlan*100}%;background:var(--br)">${n}</div></div>
+      <span class="val">${n}</span>
+    </div>`).join('')||'<div class="empty">Sem dados.</div>';
+
+  // ranking de planos (top 5)
+  const rank=plans.slice(0,5).map(([p,n],i)=>`
+    <div class="rank-item"><span class="pos ${i===0?'gold':''}">${i+1}</span><span class="nm2">${esc(p)}</span><span class="qtd">${n}</span></div>`).join('')||'<div class="empty">Sem dados.</div>';
+
+  // leads por mês (criado)
+  const byMonth={};
+  leads.forEach(l=>{const d=new Date(l.criado);if(isNaN(d))return;const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');byMonth[k]=(byMonth[k]||0)+1});
+  const months=Object.entries(byMonth).sort();
+  const maxM=Math.max(...months.map(m=>m[1]),1);
+  const barsMonth=months.map(([k,n])=>{
+    const [y,m]=k.split('-');
+    return `<div class="bar-row"><span class="lbl">${m}/${y.slice(2)}</span><div class="track"><div class="fill" style="width:${n/maxM*100}%;background:#0ea5e9">${n}</div></div><span class="val">${n}</span></div>`;
+  }).join('')||'<div class="empty">Sem dados.</div>';
+
+  $('#stats-grid').innerHTML=`
+    <div class="panel">
+      <h3>Visão geral</h3>
+      <div class="mini-grid">
+        <div class="big-stat"><b>${leads.length}</b><span>Total de leads</span></div>
+        <div class="big-stat"><b>${ativos}</b><span>Em andamento</span></div>
+        <div class="big-stat" style="color:var(--ok)"><b>${mat}</b><span>Matriculados</span></div>
+        <div class="big-stat" style="color:var(--err)"><b>${perd}</b><span>Perdidos</span></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Taxa de conversão</h3>
+      <div class="big-stat"><b style="color:var(--br)">${conv}%</b><span>matriculados / total</span></div>
+      <div class="bar-row" style="margin-top:14px">
+        <div class="track"><div class="fill" style="width:${conv}%;background:var(--ok)">${conv}%</div></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Leads por etapa</h3>
+      <div class="donut-wrap">
+        <div class="donut" style="background:conic-gradient(${stops||'#eef2fa 0% 100%'})">
+          <div class="donut-center"><div><b>${leads.length}</b><span>leads</span></div></div>
+        </div>
+        <div class="legend">${byStage.map(s=>`<span><i style="background:${s.c}"></i>${esc(s.id)}: <b>${s.n}</b></span>`).join('')}</div>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Barras por etapa</h3>
+      <div class="sub">Distribuição absoluta no funil</div>
+      ${barsStage}
+    </div>
+    <div class="panel">
+      <h3>Leads por plano</h3>
+      <div class="sub">Planos de interesse</div>
+      ${barsPlan}
+    </div>
+    <div class="panel">
+      <h3>Ranking de planos</h3>
+      <div class="sub">Top 5 mais procurados</div>
+      <div class="rank-list">${rank}</div>
+    </div>
+    <div class="panel">
+      <h3>Leads por mês</h3>
+      <div class="sub">Volume de cadastros por mês</div>
+      ${barsMonth}
+    </div>
+    <div class="panel">
+      <h3>Resumo rápido</h3>
+      <div class="mini-grid" style="grid-template-columns:1fr">
+        <div class="big-stat"><b>${leads.length?Math.round(leads.length/12):0}</b><span>média mensal (est.)</span></div>
+        <div class="big-stat"><b>${plans.length}</b><span>planos diferentes</span></div>
+        <div class="big-stat"><b>${leads.filter(l=>l.etapa==='Novo contato').length}</b><span>novos contatos (a atender)</span></div>
+      </div>
+    </div>`;
+}
+
+/* ================= FORM MODAL ================= */
 $('#f-etapa').innerHTML=STAGES.map(s=>`<option>${esc(s.id)}</option>`).join('');
 $('#f-plano').innerHTML=PLANS.map(p=>`<option>${esc(p)}</option>`).join('');
 function openForm(id){
@@ -229,16 +589,16 @@ $('#fm').addEventListener('submit',async()=>{
   const d={nome:$('#f-nome').value.trim(),telefone:$('#f-tel').value.trim(),plano:$('#f-plano').value,etapa:$('#f-etapa').value,obs:$('#f-obs').value.trim()};
   if(editing){Object.assign(editing,d);await persist('upsert',editing)}
   else{const l={id:Date.now().toString(36),criado:new Date().toISOString(),...d};leads.unshift(l);await persist('upsert',l)}
-  render();toast('Lead salvo');
+  persistAll();render();toast('Lead salvo');
 });
 $('#del').onclick=async()=>{
   if(!editing||!confirm('Excluir este lead?'))return;
-  const l=editing;leads=leads.filter(x=>x.id!==l.id);$('#dl').close();render();await persist('delete',l);toast('Lead excluído');
+  const l=editing;leads=leads.filter(x=>x.id!==l.id);$('#dl').close();persistAll();render();await persist('delete',l);toast('Lead excluído');
 };
 $('#cn').onclick=()=>$('#dl').close();
 $('#new').onclick=()=>openForm(null);
 
-/* conexão */
+/* ================= CONEXÃO ================= */
 $('#cfg').onclick=()=>{$('#f-url').value=url();$('#dc').showModal()};
 $('#cn2').onclick=()=>$('#dc').close();
 $('#fc').addEventListener('submit',()=>{
@@ -247,9 +607,20 @@ $('#fc').addEventListener('submit',()=>{
   load();
 });
 
-/* navegação e busca */
-function nav(v){view=v;$('#nv-funil').className=v==='funil'?'on':'';$('#nv-lista').className=v==='lista'?'on':'';$('#ttl').textContent=v==='funil'?'Funil de vendas':'Contatos';render()}
-$('#nv-funil').onclick=()=>nav('funil');$('#nv-lista').onclick=()=>nav('lista');
+/* ================= NAVEGAÇÃO ================= */
+const titles={funil:'Funil de vendas',planilha:'Planilha de leads',stats:'Estatísticas',lista:'Contatos'};
+function nav(v){
+  view=v;
+  ['funil','planilha','stats','lista'].forEach(k=>{
+    const b=$('#nv-'+k);if(b)b.className=k===v?'on':'';
+  });
+  $('#ttl').textContent=titles[v]||'CRM';
+  render();
+}
+$('#nv-funil').onclick=()=>nav('funil');
+$('#nv-planilha').onclick=()=>nav('planilha');
+$('#nv-stats').onclick=()=>nav('stats');
+$('#nv-lista').onclick=()=>nav('lista');
 $('#q').addEventListener('input',render);
 
 load();
