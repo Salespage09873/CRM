@@ -8,7 +8,7 @@
 :root{--bg:#f3f5f9;--sf:#fff;--tx:#1b2540;--mu:#6a7592;--ln:#e2e7f0;--side:#10192f;--br:#2563eb;--brd:#1d4ed8;--ok:#16a34a;--warn:#f59e0b;--err:#ef4444}
 *{box-sizing:border-box;margin:0}
 html,body{height:100%}
-body{font:14px/1.45 "Segoe UI",Inter,system-ui,-apple-system,Roboto,sans-serif;background:var(--bg);color:var(--tx);display:flex}
+body{font:14px/1.45 "Segoe UI",Inter,system-ui,-apple-system,Roboto,sans-serif;background:var(--bg);color:var(--tx);display:flex;overflow:hidden} /* Impede rolagem na página inteira */
 button,input,select,textarea{font:inherit;color:inherit}
 aside{width:224px;background:var(--side);color:#c9d2e8;display:flex;flex-direction:column;padding:18px 12px;flex-shrink:0}
 .logo{display:flex;align-items:center;gap:10px;color:#fff;font-weight:700;font-size:16px;padding:0 8px 22px}
@@ -19,22 +19,22 @@ nav button.on{background:var(--br);color:#fff}
 .conn{margin-top:auto;font-size:12px;padding:10px 12px;border-radius:8px;background:#1a2644;display:flex;gap:8px;align-items:center}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--warn)}
 .dot.ok{background:var(--ok)}.dot.err{background:var(--err)}
-main{flex:1;min-width:0;display:flex;flex-direction:column;height:100%}
-header{display:flex;gap:12px;align-items:center;padding:16px 24px;background:var(--sf);border-bottom:1px solid var(--ln);flex-wrap:wrap}
+main{flex:1;min-width:0;display:flex;flex-direction:column;height:100vh}
+header{display:flex;gap:12px;align-items:center;padding:16px 24px;background:var(--sf);border-bottom:1px solid var(--ln);flex-shrink:0;flex-wrap:wrap}
 header h1{font-size:18px;font-weight:700;margin-right:auto}
 .search{width:260px;max-width:100%;padding:9px 12px;border:1px solid var(--ln);border-radius:8px;background:var(--bg)}
-.btn{padding:9px 14px;border-radius:8px;border:1px solid var(--ln);background:var(--sf);cursor:pointer;font-weight:600;white-space:nowrap}
+.btn{padding:9px 14px;border-radius:8px;border:1px solid var(--ln);background:var(--sf);cursor:pointer;font-weight:600;white-space:nowrap;flex-shrink:0}
 .btn:hover{background:var(--bg)}
 .btn.pr{background:var(--br);border-color:var(--br);color:#fff}
 .btn.pr:hover{background:var(--brd)}
 .btn.dg{color:#dc2626}
 .btn.sm{padding:5px 9px;font-size:12px;font-weight:500}
 :focus-visible{outline:2px solid var(--br);outline-offset:2px}
-.kpis{display:flex;gap:12px;padding:16px 24px 0;flex-wrap:wrap}
+.kpis{display:flex;gap:12px;padding:16px 24px 0;flex-wrap:wrap;flex-shrink:0}
 .kpi{background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:12px 16px;min-width:150px;flex:1}
 .kpi b{display:block;font-size:22px}
 .kpi span{color:var(--mu);font-size:12px}
-.board{flex:1;display:flex;gap:14px;padding:16px 24px 24px;overflow:auto;align-items:flex-start}
+.board{flex:1;display:flex;gap:14px;padding:16px 24px 24px;overflow:auto;align-items:flex-start;min-height:0}
 .col{width:290px;flex-shrink:0;background:#e9edf5;border-radius:12px;display:flex;flex-direction:column;max-height:100%}
 .col.over{outline:2px dashed var(--br)}
 .ch{padding:12px 14px;display:flex;align-items:center;gap:8px;font-weight:700;border-top:3px solid var(--c);border-radius:12px 12px 0 0}
@@ -70,29 +70,29 @@ textarea{min-height:78px;resize:vertical}
 .acts{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
 .acts .dg{margin-right:auto}
 .hint{font-size:12.5px;color:var(--mu);font-weight:400}
-#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--side);color:#fff;padding:10px 16px;border-radius:8px;display:none;z-index:9}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--side);color:#fff;padding:10px 16px;border-radius:8px;display:none;z-index:9999}
 
 /* ===== PLANILHA — TELA CHEIA ===== */
-.sheet-wrap{flex:1;display:flex;flex-direction:column;min-height:0;padding:10px 10px 10px;overflow:hidden}
-.sheet-toolbar{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;flex-shrink:0}
+.sheet-wrap{flex:1;display:flex;flex-direction:column;min-height:0;padding:12px;overflow:hidden}
+.sheet-toolbar{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;flex-shrink:0}
 .sheet-toolbar .hint{margin-left:auto;font-size:12px}
-.sheet-scroll{flex:1;overflow:auto;border:1px solid var(--ln);border-radius:10px;background:var(--sf);min-height:0}
-table.sheet{border-collapse:separate;border-spacing:0;width:100%;min-width:1100px;font-size:14px;table-layout:fixed}
-table.sheet col.col-num{width:48px}
+.sheet-scroll{flex:1;overflow:auto;border:1px solid var(--ln);border-radius:10px;background:var(--sf);min-height:0;position:relative}
+table.sheet{border-collapse:separate;border-spacing:0;width:100%;min-width:1000px;font-size:14px;table-layout:fixed}
+table.sheet col.col-num{width:50px}
 table.sheet col.col-nome{width:20%}
 table.sheet col.col-tel{width:15%}
-table.sheet col.col-plano{width:17%}
+table.sheet col.col-plano{width:18%}
 table.sheet col.col-etapa{width:16%}
 table.sheet col.col-obs{width:22%}
 table.sheet col.col-data{width:100px}
 table.sheet col.col-acoes{width:70px}
 table.sheet th,table.sheet td{border-right:1px solid var(--ln);border-bottom:1px solid var(--ln);padding:0;position:relative;vertical-align:middle}
-table.sheet th{background:#f8f9fc;color:var(--mu);font-weight:600;font-size:13px;padding:12px 12px;text-align:left;position:sticky;top:0;z-index:2;white-space:nowrap}
+table.sheet th{background:#f8f9fc;color:var(--mu);font-weight:600;font-size:13px;padding:12px 12px;text-align:left;position:sticky;top:0;z-index:2;white-space:nowrap;border-top:2px solid var(--ln)}
 table.sheet th.rowhead{text-align:center}
 table.sheet td{background:#fff;height:42px}
 table.sheet td.rowhead{background:#f8f9fc;color:var(--mu);text-align:center;font-size:13px;font-weight:600;padding:8px;cursor:default;user-select:none}
 table.sheet td input,table.sheet td select{width:100%;height:100%;border:0;border-radius:0;padding:10px 12px;background:transparent;font-size:14px;font-weight:400}
-table.sheet td input:focus,table.sheet td select:focus{background:#eef5ff;outline:2px solid var(--br);outline-offset:-2px}
+table.sheet td input:focus,table.sheet td select:focus{background:#eef5ff;outline:2px solid var(--br);outline-offset:-2px;z-index:1}
 table.sheet tr:hover td{background:#fafbff}
 table.sheet tr:hover td.rowhead{background:#eef2fa}
 .row-actions{display:flex;gap:4px;justify-content:center}
@@ -133,7 +133,11 @@ table.sheet tr:hover td.rowhead{background:#eef2fa}
 /* input pequeno na toolbar */
 .bulk-input{width:64px;padding:5px 8px;border:1px solid var(--ln);border-radius:6px;text-align:center;font-size:12.5px}
 
-@media(max-width:800px){aside{display:none}header{flex-wrap:wrap}.search{width:100%;max-width:none;order:5}.kpis{padding:12px 16px 0}.board{padding:12px 16px 16px}.sheet-wrap,.stats-wrap,.list{padding:8px}}
+/* Ocultar cabeçalho e KPIs quando na planilha */
+body.view-planilha header,
+body.view-planilha .kpis { display: none !important; }
+
+@media(max-width:800px){aside{display:none}.search{width:100%;max-width:none;order:5}.kpis{padding:12px 16px 0}.board{padding:12px 16px 16px}.sheet-wrap,.stats-wrap,.list{padding:8px}}
 </style>
 </head>
 <body>
@@ -307,6 +311,14 @@ function render(){
   $('#list').hidden=view!=='lista';
   $('#sheet-view').hidden=view!=='planilha';
   $('#stats-view').hidden=view!=='stats';
+  
+  // Esconde header e KPIs na tela de planilha
+  if(view==='planilha'){
+    document.body.classList.add('view-planilha');
+  }else{
+    document.body.classList.remove('view-planilha');
+  }
+
   if(view==='funil')renderBoard();
   if(view==='lista')renderList();
   if(view==='planilha')renderSheet();
@@ -400,7 +412,7 @@ function sheetRow(l,i){
   return tr;
 }
 
-/* ===== ADICIONAR LINHAS (1 / 100 / quantidade escolhida) ===== */
+/* ===== ADICIONAR LINHAS ===== */
 function addRows(qty){
   qty=Math.max(1,Math.min(1000,parseInt(qty,10)||1));
   const created=[];
@@ -412,13 +424,11 @@ function addRows(qty){
   persistAll();
   renderSheet();
   renderKpis();
-  // foca na primeira célula da primeira linha nova (apenas se for poucas linhas)
   if(qty<=5){
     const first=created[0];
     const input=$('#sheet-body').querySelector(`tr[data-id="${first.id}"] input[data-field="nome"]`);
     if(input){input.focus();input.scrollIntoView({block:'center'})}
   }else{
-    // rola até a primeira nova linha
     const first=created[0];
     const row=$('#sheet-body').querySelector(`tr[data-id="${first.id}"]`);
     if(row)row.scrollIntoView({block:'center'});
