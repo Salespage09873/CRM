@@ -306,7 +306,6 @@
             <div id="rad-fields" class="hidden">
                 <hr style="border: 0; border-top: 2px solid var(--border-color); margin: 20px 0;">
                 
-                <!-- ✅ Área exclusiva para aulas de Conversação (CC) -->
                 <div id="cc-fields" class="hidden">
                     <label style="color: var(--primary);">💬 Alunos Presentes:</label>
                     <textarea id="cc-alunos" placeholder="Digite os nomes dos alunos presentes..." rows="3" style="margin-bottom: 15px;"></textarea>
@@ -315,7 +314,6 @@
                     <textarea id="cc-conteudo" placeholder="Digite o conteúdo/tema da aula de conversação..." rows="4" style="margin-bottom: 15px;"></textarea>
                 </div>
 
-                <!-- ✅ Área exclusiva para aulas Regulares -->
                 <div id="regular-fields">
                     <label>Lesson Plan Realizada:</label>
                     <div class="chain-info" style="text-align:left; margin-bottom:6px;">💡 Ao marcar uma aula, todas as anteriores são marcadas automaticamente.</div>
@@ -487,8 +485,14 @@
 
     let modalIndex = { exato: {}, semDia: {}, semTeacher: {}, grupo: {} };
 
-    function hideLoadingScreen() { const ls = document.getElementById('loading-screen'); if (ls) ls.classList.add('hidden'); }
-    function showLoadingMsg(msg) { const el = document.getElementById('loading-msg'); if (el) el.textContent = msg; }
+    function hideLoadingScreen() {
+        const ls = document.getElementById('loading-screen');
+        if (ls) ls.classList.add('hidden');
+    }
+    function showLoadingMsg(msg) {
+        const el = document.getElementById('loading-msg');
+        if (el) el.textContent = msg;
+    }
     function showErrorBanner(msg) {
         const banner = document.getElementById('error-banner');
         const msgEl = document.getElementById('error-banner-msg');
@@ -778,7 +782,6 @@
         return modal.includes('IN-C') || modal.includes('IN COMPANY') || modal.includes('IN-COMPANY');
     }
 
-    // ✅ Verifica se é uma turma de Conversação (CC)
     function isConversationClass(cls) {
         if (!cls) return false;
         const groupUpper = (cls.group || '').toUpperCase();
@@ -804,36 +807,69 @@
         if (novos.length > 0) console.log('🆕 Novos teachers:', novos.join(', '));
     }
 
+    // ============================================================
+    // INICIALIZAÇÃO BLINDADA
+    // ============================================================
     window.addEventListener('DOMContentLoaded', async () => {
-        const safetyTimer = setTimeout(() => hideLoadingScreen(), 3000);
-        const forceHide = () => { clearTimeout(safetyTimer); hideLoadingScreen(); };
+        // Timer de segurança GLOBAL — independente de qualquer coisa
+        const safetyTimer = setTimeout(() => {
+            console.warn('⚠️ Safety timer disparou — forçando hide');
+            hideLoadingScreen();
+        }, 4000);
+
         try {
             showLoadingMsg('Carregando...');
-            loadLessonProgress(); loadValoresSalvos(); loadVipProgress();
-            renderTeachers(); populateGroupSelect();
+
+            // Cada função em try/catch INDIVIDUAL
+            try { loadLessonProgress(); } catch(e) { console.warn('loadLessonProgress:', e); }
+            try { loadValoresSalvos(); } catch(e) { console.warn('loadValoresSalvos:', e); }
+            try { loadVipProgress(); } catch(e) { console.warn('loadVipProgress:', e); }
+            try { renderTeachers(); } catch(e) { console.warn('renderTeachers:', e); }
+            try { populateGroupSelect(); } catch(e) { console.warn('populateGroupSelect:', e); }
             try {
                 const now = new Date();
                 const mi = document.getElementById('att-month-select'); if (mi) mi.value = now.toISOString().slice(0, 7);
                 const mf = document.getElementById('fech-mes'); if (mf) mf.value = now.toISOString().slice(0, 7);
             } catch(e) {}
-            forceHide();
 
+            // Esconde a tela ANTES dos fetchs
+            clearTimeout(safetyTimer);
+            hideLoadingScreen();
+
+            // Aviso se estiver em file://
+            if (location.protocol === 'file:') {
+                showErrorBanner('⚠️ Você abriu via file:// — alguns dados externos podem não carregar. Use um servidor HTTP local (ex: python -m http.server).');
+            }
+
+            // Fetchs em background
             const tasks = [
-                (async () => { try { await loadKidsLessonPlans(); } catch(e) {} })(),
-                (async () => { try { const text = await fetchWithTimeout(SCHEDULE_THIS_URL, FETCH_TIMEOUT_MS); scheduleData = parseScheduleCSV(text); allWeeks['This Week'] = scheduleData; } catch(e) {} })(),
-                (async () => { try { const text = await fetchWithTimeout(SCHEDULE_NEXT_URL, FETCH_TIMEOUT_MS); nextWeekData = parseScheduleCSV(text, { skipGroupRegistration: true }); allWeeks['Next Week'] = nextWeekData; } catch(e) {} })(),
-                (async () => { try { const text = await fetchWithTimeout(STUDENTS_URL, FETCH_TIMEOUT_MS); parseStudentsCSV(text); } catch(e) {} })(),
-                (async () => { try { const rads = await jsonpRequest(API_URL); remoteRads = rads || []; } catch(e) {} })(),
-                (async () => { try { await loadGlobalProgress(); } catch(e) {} })()
+                (async () => { try { await loadKidsLessonPlans(); } catch(e) { console.warn('kids:', e); } })(),
+                (async () => { try { const text = await fetchWithTimeout(SCHEDULE_THIS_URL, FETCH_TIMEOUT_MS); scheduleData = parseScheduleCSV(text); allWeeks['This Week'] = scheduleData; } catch(e) { console.warn('schedule this:', e); } })(),
+                (async () => { try { const text = await fetchWithTimeout(SCHEDULE_NEXT_URL, FETCH_TIMEOUT_MS); nextWeekData = parseScheduleCSV(text, { skipGroupRegistration: true }); allWeeks['Next Week'] = nextWeekData; } catch(e) { console.warn('schedule next:', e); } })(),
+                (async () => { try { const text = await fetchWithTimeout(STUDENTS_URL, FETCH_TIMEOUT_MS); parseStudentsCSV(text); } catch(e) { console.warn('students:', e); } })(),
+                (async () => { try { const rads = await jsonpRequest(API_URL); remoteRads = rads || []; } catch(e) { console.warn('rads:', e); } })(),
+                (async () => { try { await loadGlobalProgress(); } catch(e) { console.warn('progress:', e); } })()
             ];
             await Promise.allSettled(tasks);
-            sincronizarTeachersComSchedule();
-            buildModalMap(); buildGroupBookMap();
-            renderTeachers(); populateGroupSelect(); renderGroupLessonPlans();
-            populateFechamentoTeacherFilter(); populateHistoryTeacherFilter();
+
+            // Re-render depois que os dados chegaram
+            try { sincronizarTeachersComSchedule(); } catch(e) {}
+            try { buildModalMap(); } catch(e) {}
+            try { buildGroupBookMap(); } catch(e) {}
+            try { renderTeachers(); } catch(e) {}
+            try { populateGroupSelect(); } catch(e) {}
+            try { renderGroupLessonPlans(); } catch(e) {}
+            try { populateFechamentoTeacherFilter(); } catch(e) {}
+            try { populateHistoryTeacherFilter(); } catch(e) {}
             try { await tryFlushPendingQueue(); } catch(e) {}
+
             console.log(`✅ Inicialização completa. Turmas: ${allGroupsFromSchedule.size}, RADs: ${remoteRads.length}, Teachers: ${VALID_TEACHERS.length}`);
-        } catch (err) { console.error('❌ Erro:', err); forceHide(); }
+        } catch (err) {
+            console.error('❌ Erro fatal na inicialização:', err);
+            clearTimeout(safetyTimer);
+            hideLoadingScreen();
+            showErrorBanner('Erro na inicialização: ' + (err.message || err));
+        }
     });
 
     async function refreshData() {
@@ -1416,6 +1452,9 @@
         if (valorAtual) select.value = valorAtual;
     }
 
+    // ============================================================
+    // renderHistory — RECONSTRUÍDA (estava truncada)
+    // ============================================================
     function renderHistory() {
         const container = document.getElementById('history-content');
         if (!container) return;
@@ -1440,4 +1479,398 @@
             'noshow': { text: '❌ No Show', color: 'var(--danger)' },
             'cancelada': { text: '⚠️ Cancelada', color: 'var(--warning)' }
         };
-        let html = `<p style="text-align:center;color:var(--text-sec);margin-bottom:15px;font-size:0.9rem;">Total: ${filter
+        let html = `<p style="text-align:center;color:var(--text-sec);margin-bottom:15px;font-size:0.9rem;">Total: ${filtered.length} aula(s)</p>`;
+        html += `<div class="fechamento-lista"><table><thead><tr>
+            <th>Data</th><th>Teacher</th><th>Dia</th><th>Horário</th><th>Turma</th><th>Status</th><th>Lessons</th><th>Presença</th><th>Obs</th>
+        </tr></thead><tbody>`;
+        filtered.forEach(rad => {
+            const st = statusLabel[rad.status] || { text: rad.status || '—', color: 'var(--text-sec)' };
+            const lessonsStr = (rad.lessons && rad.lessons.length) ? rad.lessons.join(', ') : '—';
+            const attStr = (rad.attendance && rad.attendance.length) ? rad.attendance.join(', ') : '—';
+            const obsStr = rad.observations ? rad.observations : '—';
+            html += `<tr>
+                <td>${rad.timestamp || '—'}</td>
+                <td><strong>${rad.teacher || '—'}</strong></td>
+                <td>${rad.day || '—'}</td>
+                <td>${rad.time || '—'}</td>
+                <td>${rad.group || '—'}</td>
+                <td style="color:${st.color};font-weight:600;">${st.text}</td>
+                <td style="font-size:0.8rem;">${lessonsStr}</td>
+                <td style="font-size:0.8rem;">${attStr}</td>
+                <td style="font-size:0.8rem;max-width:220px;">${obsStr}</td>
+            </tr>`;
+        });
+        html += `</tbody></table></div>`;
+        container.innerHTML = html;
+    }
+
+    // ============================================================
+    // Funções auxiliares que faltavam (stubs seguros)
+    // ============================================================
+    function renderTeachers() {
+        const grid = document.getElementById('teachers-grid');
+        if (!grid) return;
+        grid.innerHTML = '';
+        VALID_TEACHERS.slice().sort((a,b) => a.name.localeCompare(b.name)).forEach(t => {
+            const card = document.createElement('div');
+            card.className = 'teacher-card';
+            card.innerHTML = `<div class="teacher-name">${t.name}</div>`;
+            card.onclick = () => selectTeacher(t.name);
+            grid.appendChild(card);
+        });
+    }
+
+    function selectTeacher(name) {
+        currentTeacher = VALID_TEACHERS.find(t => t.name === name) || { name };
+        document.getElementById('current-teacher-name').textContent = `Professor(a): ${name}`;
+        showSchedule();
+        renderWeekSelector();
+        loadWeekData(currentWeekName);
+    }
+
+    function renderWeekSelector() {
+        const sel = document.getElementById('week-selector');
+        if (!sel) return;
+        sel.innerHTML = '';
+        ['This Week', 'Next Week'].forEach(w => {
+            const btn = document.createElement('button');
+            btn.textContent = w === 'This Week' ? '📅 Esta Semana' : '📅 Próxima Semana';
+            btn.className = currentWeekName === w ? 'active' : '';
+            btn.onclick = () => { currentWeekName = w; renderWeekSelector(); loadWeekData(w); };
+            sel.appendChild(btn);
+        });
+    }
+
+    function loadWeekData(weekName) {
+        currentWeekName = weekName;
+        const data = weekName === 'Next Week' ? nextWeekData : scheduleData;
+        currentWeekData = currentTeacher ? data.filter(c => c.teacher === currentTeacher.name) : [];
+        renderSchedule();
+    }
+
+    function renderSchedule() {
+        const container = document.getElementById('schedule-content');
+        if (!container) return;
+        if (!currentTeacher) { container.innerHTML = ''; return; }
+        const days = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
+        let html = '';
+        days.forEach(day => {
+            const aulas = currentWeekData.filter(c => c.dayName === day).sort((a,b) => a.time.localeCompare(b.time));
+            if (aulas.length === 0) return;
+            html += `<div class="day-section"><div class="day-header">${day}</div><div class="classes-list">`;
+            aulas.forEach(cls => {
+                const saved = isRadSaved(cls);
+                const cc = isConversationClass(cls);
+                html += `<div class="class-card ${saved ? 'rad-saved' : ''} ${currentWeekName === 'Next Week' ? 'next-week-card' : ''}">
+                    ${saved ? '<div class="rad-saved-check">✓</div>' : ''}
+                    <span class="class-time">${cls.time}</span>
+                    <div class="class-info"><strong>${cls.group}</strong></div>
+                    <div class="class-info">📚 ${cls.book || '—'}</div>
+                    ${cls.room ? `<span class="badge badge-room">🏠 ${cls.room}</span>` : ''}
+                    ${cls.modal ? `<span class="badge badge-modal">${cls.modal}</span>` : ''}
+                    ${cc ? '<span class="badge badge-cc">💬 CC</span>' : ''}
+                    ${currentWeekName === 'Next Week' ? '<span class="badge badge-next-week">PRÓX. SEMANA</span>' : ''}
+                    ${saved ? '<span class="badge badge-saved">RAD SALVO</span>' : ''}
+                    <button class="action-btn ${saved ? 'saved' : ''}" onclick="openRadModal('${cls.group.replace(/'/g, "\\'")}','${cls.dayName}','${cls.time}','${(cls.book||'').replace(/'/g,"\\'")}')">
+                        ${saved ? '✅ Ver RAD' : '📝 Registrar RAD'}
+                    </button>
+                </div>`;
+            });
+            html += `</div></div>`;
+        });
+        if (!html) html = '<p style="text-align:center;color:var(--text-sec);padding:40px;">Nenhuma aula encontrada nesta semana.</p>';
+        container.innerHTML = html;
+    }
+
+    function populateGroupSelect() {
+        const sel = document.getElementById('att-group-select');
+        if (!sel) return;
+        const atual = sel.value;
+        sel.innerHTML = '<option value="">Selecione a Turma...</option>';
+        Array.from(allGroupsFromSchedule.values())
+            .map(g => g.display)
+            .sort()
+            .forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name; opt.textContent = name;
+                sel.appendChild(opt);
+            });
+        if (atual) sel.value = atual;
+    }
+
+    function renderGroupLessonPlans() {
+        const grid = document.getElementById('group-lesson-grid');
+        if (!grid) return;
+        const search = (document.getElementById('search-group')?.value || '').toUpperCase();
+        const groups = Array.from(allGroupsFromSchedule.values()).map(g => g.display).sort();
+        const filtered = groups.filter(g => !search || g.toUpperCase().includes(search));
+        if (filtered.length === 0) {
+            grid.innerHTML = '<p style="text-align:center;color:var(--text-sec);padding:40px;">Nenhuma turma encontrada.</p>';
+            return;
+        }
+        grid.innerHTML = filtered.map(g => {
+            const lessons = getGroupLessons(g);
+            const progress = getProgressForGroup(g);
+            const done = progress.filter(p => p.completed).length;
+            const pct = lessons.length ? Math.round((done / lessons.length) * 100) : 0;
+            const book = getBookForGroup(g);
+            return `<div class="group-card" onclick="openGroupDetail('${g.replace(/'/g, "\\'")}')">
+                <h3>${g}</h3>
+                <div class="book-info">📚 ${book}</div>
+                <div class="progress">${done} / ${lessons.length} aulas (${pct}%)</div>
+                <div class="progress-bar"><div class="fill" style="width:${pct}%"></div></div>
+            </div>`;
+        }).join('');
+    }
+
+    function renderVipGrid() {
+        const grid = document.getElementById('vip-grid');
+        if (!grid) return;
+        const alunos = new Set();
+        Object.values(studentsData).forEach(arr => arr.forEach(a => alunos.add(a)));
+        const sorted = Array.from(alunos).sort();
+        if (sorted.length === 0) {
+            grid.innerHTML = '<p style="text-align:center;color:var(--text-sec);padding:40px;">Nenhum aluno carregado.</p>';
+            return;
+        }
+        grid.innerHTML = sorted.map(a => {
+            const prog = currentVipProgress[a] || [];
+            return `<div class="group-card" onclick="openVipDetail('${a.replace(/'/g, "\\'")}')">
+                <h3>👑 ${a}</h3>
+                <div class="progress">${prog.length} aula(s) marcada(s)</div>
+            </div>`;
+        }).join('');
+    }
+
+    function openGroupDetail(group) {
+        currentGroup = group;
+        const lessons = getGroupLessons(group);
+        const progress = getProgressForGroup(group);
+        const nextIdx = getNextLessonIndex(group);
+        document.getElementById('lesson-detail-title').textContent = `📖 ${group}`;
+        let html = `<div class="group-header"><h2>${group}</h2><span class="book-badge">📚 ${getBookForGroup(group)}</span></div>`;
+        html += `<div class="group-lessons-container">`;
+        lessons.forEach((l, i) => {
+            const done = isLessonDone(group, l.id);
+            const isNext = i === nextIdx;
+            const cls = ['lesson-item', l.isRevision ? 'revision' : '', l.isTest ? 'test' : '', done ? 'checked' : '', isNext ? 'next' : ''].filter(Boolean).join(' ');
+            html += `<div class="${cls}" onclick="toggleLessonCheck('${group.replace(/'/g, "\\'")}', ${i}, ${!done})">
+                <input type="checkbox" ${done ? 'checked' : ''} onclick="event.stopPropagation()">
+                <span class="lesson-label">${l.label}</span>
+                ${l.isRevision ? '<span class="revision-badge">REV</span>' : ''}
+                ${l.isTest ? '<span class="test-badge">TEST</span>' : ''}
+                ${isNext ? '<span class="next-label-badge">PRÓXIMA</span>' : ''}
+            </div>`;
+        });
+        html += `</div>`;
+        document.getElementById('lesson-detail-content').innerHTML = html;
+        document.getElementById('lesson-detail-modal').classList.remove('hidden');
+    }
+
+    function toggleLessonCheck(group, idx, completed) {
+        applyChainToggle(group, idx, completed);
+    }
+
+    function openVipDetail(aluno) {
+        currentVipAluno = aluno;
+        const lessons = BOOK_STRUCTURE['Book 1']?.lessons || [];
+        const marcadas = (currentVipProgress[aluno] || []);
+        document.getElementById('vip-detail-title').textContent = `👑 ${aluno}`;
+        let html = `<div class="group-lessons-container">`;
+        lessons.forEach((label, i) => {
+            const id = `lesson_${i}`;
+            const done = marcadas.includes(id);
+            html += `<div class="lesson-item ${done ? 'checked' : ''}" onclick="toggleVipCheck('${aluno.replace(/'/g, "\\'")}', '${id}')">
+                <input type="checkbox" ${done ? 'checked' : ''} onclick="event.stopPropagation()">
+                <span class="lesson-label">${label}</span>
+            </div>`;
+        });
+        html += `</div>`;
+        document.getElementById('vip-detail-content').innerHTML = html;
+        document.getElementById('vip-detail-modal').classList.remove('hidden');
+    }
+
+    function toggleVipCheck(aluno, lessonId) {
+        if (!currentVipProgress[aluno]) currentVipProgress[aluno] = [];
+        const arr = currentVipProgress[aluno];
+        const idx = arr.indexOf(lessonId);
+        if (idx >= 0) arr.splice(idx, 1); else arr.push(lessonId);
+        persistVipProgress();
+        openVipDetail(aluno);
+    }
+
+    function saveLessonProgress() {
+        persistLessonProgress();
+        alert('✅ Progresso salvo!');
+        closeModal('lesson-detail-modal');
+    }
+    function resetLessonProgress() {
+        if (!currentGroup) return;
+        if (!confirm('Resetar todo o progresso desta turma?')) return;
+        delete currentLessonProgress[currentGroup];
+        persistLessonProgress();
+        openGroupDetail(currentGroup);
+        renderGroupLessonPlans();
+    }
+    function saveVipProgress() {
+        persistVipProgress();
+        alert('✅ Progresso VIP salvo!');
+        closeModal('vip-detail-modal');
+    }
+
+    function openRadModal(group, day, time, book) {
+        const cls = currentWeekData.find(c => c.group === group && c.dayName === day && c.time === time);
+        if (!cls) { alert('Aula não encontrada.'); return; }
+        currentRadClass = cls;
+        const saved = getRadSavedData(cls);
+        const cc = isConversationClass(cls);
+        document.getElementById('rad-class-info').innerHTML = `
+            <strong>${cls.group}</strong><br>
+            📅 ${cls.dayName} — ⏰ ${cls.time}<br>
+            📚 ${cls.book || '—'} ${cls.room ? `| 🏠 ${cls.room}` : ''} ${cls.modal ? `| ${cls.modal}` : ''}
+        `;
+        document.getElementById('rad-saved-badge').classList.toggle('hidden', !saved);
+        document.getElementById('cc-fields').classList.toggle('hidden', !cc);
+        document.getElementById('regular-fields').classList.toggle('hidden', cc);
+        document.getElementById('rad-status').value = saved?.status || '';
+        document.getElementById('rad-observations').value = saved?.observations || '';
+        if (cc) {
+            document.getElementById('cc-alunos').value = (saved?.attendance || []).join(', ');
+            document.getElementById('cc-conteudo').value = (saved?.lessons || []).join(', ');
+        }
+        toggleRadFields();
+        if (!cc) {
+            renderLessonPlanChecklist(cls);
+            renderAttendanceChecklist(cls, saved);
+        }
+        _travarBotoesRad(!!saved);
+        document.getElementById('rad-modal').classList.remove('hidden');
+    }
+
+    function toggleRadFields() {
+        const status = document.getElementById('rad-status').value;
+        document.getElementById('rad-fields').classList.toggle('hidden', !status);
+    }
+
+    function renderLessonPlanChecklist(cls) {
+        const container = document.getElementById('lesson-plan-container');
+        if (!container) return;
+        const lessons = getGroupLessons(cls.group);
+        const nextIdx = getNextLessonIndex(cls.group);
+        container.innerHTML = lessons.map((l, i) => {
+            const done = isLessonDone(cls.group, l.id);
+            return `<div class="checkbox-group ${done ? 'checked' : ''}">
+                <input type="checkbox" ${done ? 'checked' : ''} data-lesson-id="${l.id}" data-idx="${i}">
+                <label>${l.label} ${i === nextIdx ? '<span class="next-badge">PRÓXIMA</span>' : ''} ${done ? '<span class="done-badge">OK</span>' : ''}</label>
+            </div>`;
+        }).join('');
+    }
+
+    function renderAttendanceChecklist(cls, saved) {
+        const container = document.getElementById('attendance-container');
+        if (!container) return;
+        const alunos = findStudentsForGroup(cls.group, cls.book);
+        const presentes = saved?.attendance || [];
+        if (alunos.length === 0) {
+            container.innerHTML = '<p style="color:var(--text-sec);text-align:center;padding:10px;">Nenhum aluno cadastrado para esta turma.</p>';
+            return;
+        }
+        container.innerHTML = alunos.map(a => {
+            const presente = presentes.includes(a);
+            return `<div class="checkbox-group ${presente ? 'checked' : ''}">
+                <input type="checkbox" ${presente ? 'checked' : ''} data-aluno="${a.replace(/"/g, '&quot;')}">
+                <label>${a}</label>
+            </div>`;
+        }).join('');
+    }
+
+    async function saveRad() {
+        if (!currentRadClass || !currentTeacher) { alert('Erro: aula não selecionada.'); return; }
+        const status = document.getElementById('rad-status').value;
+        if (!status) { alert('Selecione o status da aula.'); _travarBotoesRad(false); return; }
+        const cc = isConversationClass(currentRadClass);
+        let lessons = [], attendance = [], observations = '';
+        if (cc) {
+            attendance = (document.getElementById('cc-alunos').value || '').split(',').map(s => s.trim()).filter(Boolean);
+            lessons = (document.getElementById('cc-conteudo').value || '').split(',').map(s => s.trim()).filter(Boolean);
+        } else {
+            observations = document.getElementById('rad-observations').value || '';
+            attendance = Array.from(document.querySelectorAll('#attendance-container input[type="checkbox"]:checked')).map(cb => cb.dataset.aluno);
+            lessons = Array.from(document.querySelectorAll('#lesson-plan-container input[type="checkbox"]:checked')).map(cb => cb.dataset.lessonId);
+        }
+        const radData = {
+            timestamp: new Date().toLocaleString('pt-BR'),
+            teacher: currentTeacher.name,
+            day: currentRadClass.dayName,
+            time: currentRadClass.time,
+            group: currentRadClass.group,
+            status, lessons, attendance, observations
+        };
+        try { localStorage.setItem(getRadKey(currentRadClass), JSON.stringify(radData)); } catch(e) {}
+        await sendRadToServer(radData);
+        alert('✅ RAD salvo!');
+        renderSchedule();
+        closeModal('rad-modal');
+    }
+
+    function clearRad() {
+        if (!currentRadClass) return;
+        if (!confirm('Limpar todos os dados deste RAD?')) return;
+        try { localStorage.removeItem(getRadKey(currentRadClass)); } catch(e) {}
+        closeModal('rad-modal');
+        renderSchedule();
+    }
+
+    function closeModal(id) {
+        document.getElementById(id)?.classList.add('hidden');
+    }
+
+    function openAttendanceList() {
+        document.getElementById('attendance-modal').classList.remove('hidden');
+        populateGroupSelect();
+        loadAttendanceTable();
+    }
+
+    function loadAttendanceTable() {
+        const container = document.getElementById('attendance-table-container');
+        if (!container) return;
+        const group = document.getElementById('att-group-select').value;
+        const month = document.getElementById('att-month-select').value;
+        if (!group) { container.innerHTML = '<p style="text-align:center;color:var(--text-sec);padding:20px;">Selecione uma turma.</p>'; return; }
+        const alunos = findStudentsForGroup(group, '');
+        if (alunos.length === 0) { container.innerHTML = '<p style="text-align:center;color:var(--text-sec);padding:20px;">Nenhum aluno cadastrado.</p>'; return; }
+        let rads = remoteRads.filter(r => normalizeGroupKey(r.group || '') === normalizeGroupKey(group));
+        if (month) rads = rads.filter(r => {
+            const ts = String(r.timestamp || '');
+            const m = ts.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+            if (m) return `${m[3]}-${m[2]}` === month;
+            return false;
+        });
+        let html = `<table class="attendance-table"><thead><tr><th>Aluno</th>`;
+        rads.forEach(r => { html += `<th>${r.timestamp || '—'}</th>`; });
+        html += `<th>Total</th></tr></thead><tbody>`;
+        alunos.forEach(a => {
+            html += `<tr><td><strong>${a}</strong></td>`;
+            let total = 0;
+            rads.forEach(r => {
+                const presente = (r.attendance || []).includes(a);
+                if (presente) total++;
+                html += `<td>${presente ? '✅' : '—'}</td>`;
+            });
+            html += `<td><strong>${total}</strong></td></tr>`;
+        });
+        html += `</tbody></table>`;
+        container.innerHTML = html;
+    }
+
+    // Fecha modais ao clicar fora
+    document.addEventListener('click', (e) => {
+        if (e.target.classList && e.target.classList.contains('modal-overlay')) {
+            e.target.classList.add('hidden');
+        }
+    });
+
+    console.log('✅ Script carregado. Aguardando DOMContentLoaded...');
+</script>
+</body>
+</html>
